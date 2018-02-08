@@ -11,8 +11,9 @@ const del = require('del');
 const gutil = require('gulp-util');
 const uglify = require('gulp-uglify');
 const preprocessify = require('preprocessify');
-require("babel-polyfill");
+require('babel-polyfill');
 
+let dev = false;
 const cfgBrowserify = {
   cache: {},
   packageCache: {},
@@ -21,28 +22,63 @@ const cfgBrowserify = {
 };
 
 const cfgTransform = {
+  'global': true,
+  'only': /^(?:.*\/node_modules\/black\/|(?!.*\/node_modules\/)).*$/,
   'presets': ['es2015', 'stage-0'],
   'plugins': [
-    ["babel-root-slash-import", {
-      "rootPathSuffix": "js"
+    ['babel-root-slash-import', {
+      'rootPathSuffix': 'js'
     }],
     ['transform-runtime', {
-      'polyfill': true,
+      'polyfill': false,
       'regenerator': false
     }]
   ]
 };
 
-let bundler = browserify('./js/main.js', cfgBrowserify)
-  .transform(babelify, cfgTransform);
+let bundler = browserify('./js/main.js', cfgBrowserify).transform(babelify, cfgTransform);
 
-gulp.task('assets', function () {
-  return gulp.src(['./assets/*.*'])
+gulp.task('sheets', function () {
+  return gulp.src(['./sheets/*.*'])
     .pipe(plumber())
     .pipe(gulp.dest('./dist/assets'))
     .pipe(browserSync.stream());
 });
 
+gulp.task('textures', function () {
+  return gulp.src(['./textures/*.*'])
+    .pipe(plumber())
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(browserSync.stream());
+});
+
+gulp.task('spine', function () {
+  return gulp.src(['./spine/*.*'])
+    .pipe(plumber())
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(browserSync.stream());
+});
+
+gulp.task('fonts', function () {
+  return gulp.src(['./fonts/*.*'])
+    .pipe(plumber())
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(browserSync.stream());
+});
+
+gulp.task('audio', function () {
+  return gulp.src(['./audio/*.*'])
+    .pipe(plumber())
+    .pipe(gulp.dest('./dist/assets'))
+    .pipe(browserSync.stream());
+});
+
+gulp.task('index', ['sheets'], function () {
+  return gulp.src(['./html/index.html'])
+    .pipe(plumber())
+    .pipe(gulp.dest('./dist'))
+    .pipe(browserSync.stream());
+});
 
 gulp.task('clean', function () {
   del.sync('./dist/**/*');
@@ -51,31 +87,49 @@ gulp.task('clean', function () {
 function compile() {
   let stream = null;
 
-  stream = bundler.bundle()
-    .on('error', function (err) {
-      console.log(err.message);
-      browserSync.notify(err.message, 3000);
-      this.emit('end');
-    })
-    .on('end', function () {
+  if (dev) {
+    stream = bundler.bundle()
+      .on('error', function (err) {
+        console.log(err.message);
+        browserSync.notify(err.message, 3000);
+        this.emit('end');
+      })
+      .on('end', function () { })
+      .pipe(plumber())
+      .pipe(source('code.js'))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({ loadMaps: true }))
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest('./dist'));
 
-    })
-    .pipe(plumber())
-    .pipe(source('code.js'))
-    .pipe(buffer())
-    //.pipe(uglify())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./dist'));
+    stream.on('end', x => {
+      browserSync.reload({ stream: false })
+    });
+  } else {
+    stream = bundler.bundle()
+      .on('error', function (err) {
+        console.log(err.message);
+        browserSync.notify(err.message, 3000);
+        this.emit('end');
+      })
+      .on('end', function () { })
+      .pipe(plumber())
+      .pipe(source('code.js'))
+      .pipe(buffer())
+      .pipe(uglify())
+      .pipe(sourcemaps.init({ loadMaps: true }))
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest('./dist'));
 
-  stream.on('end', x => {
-    browserSync.reload({stream: false})
-  });
+    stream.on('end', x => {
+      browserSync.reload({ stream: false })
+    });
+  }
 
   return stream;
 }
 
-gulp.task('build', ['assets'], function () {
+gulp.task('build', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], function () {
   let cfg = {
     debug: true,
     ignoreWatch: ['**/node_modules/**'],
@@ -83,7 +137,8 @@ gulp.task('build', ['assets'], function () {
     awaitWriteFinish: true
   };
 
-  bundler = watchify(bundler, cfg);
+  if (dev)
+    bundler = watchify(bundler, cfg);
 
   bundler.on('update', compile);
   bundler.on('time', time => {
@@ -97,22 +152,71 @@ gulp.task('build', ['assets'], function () {
   return compile();
 });
 
-gulp.task('watch-media', ['assets'], function () {
-  var watcher1 = gulp.watch('./assets/*.*', ['assets']);
+gulp.task('watch-assets', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], function () {
+  var watcher1 = gulp.watch('./sheets/*.*', ['sheets']);
+  var watcher2 = gulp.watch('./fonts/*.*', ['fonts']);
+  var watcher3 = gulp.watch('./spine/*.*', ['spine']);
+  var watcher4 = gulp.watch('./html/*.*', ['index']);
+  var watcher5 = gulp.watch('./audio/*.*', ['audio']);
+  var watcher6 = gulp.watch('./textures/*.*', ['textures']);
 
   watcher1.on('change', function (event) {
-    console.log('Asset file ' + event.path + ' was ' + event.type + ', running tasks...');
+    console.log('Texture Atlas file ' + event.path + ' was ' + event.type + ', running tasks...');
+  });
+
+  watcher2.on('change', function (event) {
+    console.log('Font file ' + event.path + ' was ' + event.type + ', running tasks...');
+  });
+
+  watcher3.on('change', function (event) {
+    console.log('Spine file ' + event.path + ' was ' + event.type + ', running tasks...');
+  });
+
+  watcher4.on('change', function (event) {
+    console.log('HTML file ' + event.path + ' was ' + event.type + ', running tasks...');
+  });
+
+  watcher5.on('change', function (event) {
+    console.log('Audio file ' + event.path + ' was ' + event.type + ', running tasks...');
+  });
+
+  watcher6.on('change', function (event) {
+    console.log('Texture file ' + event.path + ' was ' + event.type + ', running tasks...');
   });
 });
 
 function bs() {
   let cfg = {
     server: { baseDir: './dist' },
-    reloadDelay: 0,
-    open: false
+    reloadDelay: 50,
+    open: false,
+    port: 4245
   };
   return browserSync(cfg);
 }
 
-gulp.task('bundle', ['build', 'assets']);
-gulp.task('default', ['build', 'watch-media'], bs);
+gulp.task('setDev', function () {
+  dev = true;
+
+  const preprocessCfg = {
+    includeExtensions: ['.js'],
+    context: { DEBUG: true }
+  };
+
+  bundler = bundler.transform(preprocessify, preprocessCfg);
+});
+
+gulp.task('setProd', function () {
+  dev = false;
+
+  const preprocessCfg = {
+    includeExtensions: ['.js'],
+    context: {}
+  };
+
+  bundler = bundler.transform(preprocessify, preprocessCfg);
+});
+
+gulp.task('bundle', ['setProd', 'build', 'sheets', 'spine', 'index', 'fonts', 'audio']);
+gulp.task('start:prod', ['setProd', 'build', 'watch-assets'], bs);
+gulp.task('default', ['setDev', 'build', 'watch-assets'], bs);
