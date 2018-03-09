@@ -115,10 +115,10 @@ function compile() {
       .pipe(preprocess({ context: { DEBUG: true } }))
       .pipe(sourcemaps.init())
       .pipe(closureCompiler({
+        externs: './externs/w3c_audio.js',
         entry_point: 'main.js',
         compilation_level: 'ADVANCED', // SIMPLE, ADVANCED
         rewrite_polyfills: false,
-        //warning_level: 'VERBOSE',
         language_in: 'ECMASCRIPT6_STRICT',
         language_out: 'ECMASCRIPT5_STRICT',
         output_wrapper: '(function(){\n%output%\n}).call(this);',
