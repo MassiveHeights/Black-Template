@@ -5,13 +5,14 @@ import Game from './game';
 const black = new Black('container', Game, CanvasDriver);
 
 // For performance purposes fixed-time-step is disabled by default
-black.enableFixedTimeStep = true;
+// Enable it if you doing multiplayer, physics based on time based game
+black.enableFixedTimeStep = false;
 
 // Pause simulation when container loses focus
-black.pauseOnBlur = true;
+black.pauseOnBlur = false;
 
 // Pause simulation when page is getting hidden
-black.pauseOnHide = true;
+black.pauseOnHide = false;
 
 // Wroom, wroom!
 black.start();

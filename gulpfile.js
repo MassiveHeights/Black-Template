@@ -10,7 +10,12 @@ const plumber = require('gulp-plumber');
 const del = require('del');
 const gutil = require('gulp-util');
 const uglify = require('gulp-uglify');
+const preprocess = require('gulp-preprocess');
 const preprocessify = require('preprocessify');
+const compilerPackage = require('google-closure-compiler');
+const closureCompiler = compilerPackage.gulp(/* options */);
+const stripDebug = require('gulp-strip-debug');
+
 require('babel-polyfill');
 
 let dev = false;
@@ -31,7 +36,7 @@ const cfgTransform = {
     }],
     ['transform-runtime', {
       'polyfill': false,
-      'regenerator': false
+      'regenerator': true
     }]
   ]
 };
@@ -106,19 +111,26 @@ function compile() {
       browserSync.reload({ stream: false })
     });
   } else {
-    stream = bundler.bundle()
-      .on('error', function (err) {
-        console.log(err.message);
-        browserSync.notify(err.message, 3000);
-        this.emit('end');
-      })
-      .on('end', function () { })
-      .pipe(plumber())
-      .pipe(source('code.js'))
+    stream = gulp.src(['./js/**/*.js'], {})
+      .pipe(preprocess({ context: { DEBUG: true } }))
+      .pipe(sourcemaps.init())
+      .pipe(closureCompiler({
+        entry_point: 'main.js',
+        compilation_level: 'ADVANCED', // SIMPLE, ADVANCED
+        rewrite_polyfills: false,
+        //warning_level: 'VERBOSE',
+        language_in: 'ECMASCRIPT6_STRICT',
+        language_out: 'ECMASCRIPT5_STRICT',
+        output_wrapper: '(function(){\n%output%\n}).call(this);',
+        js_output_file: 'code.js',
+        module_resolution: 'NODE',
+        dependency_mode: 'STRICT',
+        extra_annotation_name: 'cat',
+        jscomp_off: 'checkVars',
+        js: ['node_modules/black/dist/black-es6-module.js', 'node_modules/black/package.json']
+      }))
+      .pipe(sourcemaps.write('/'))
       .pipe(buffer())
-      .pipe(uglify())
-      .pipe(sourcemaps.init({ loadMaps: true }))
-      .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./dist'));
 
     stream.on('end', x => {
@@ -189,7 +201,7 @@ function bs() {
   let cfg = {
     server: { baseDir: './dist' },
     reloadDelay: 50,
-    open: false,
+    open: true,
     port: 4245
   };
   return browserSync(cfg);
