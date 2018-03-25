@@ -113,13 +113,13 @@ function compile() {
   } else {
     stream = gulp.src(['./js/**/*.js'], {})
       .pipe(preprocess({ context: { DEBUG: true } }))
-      .pipe(sourcemaps.init())
+      .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(closureCompiler({
         externs: './externs/w3c_audio.js',
         entry_point: 'main.js',
         compilation_level: 'ADVANCED', // SIMPLE, ADVANCED
         rewrite_polyfills: false,
-        language_in: 'ECMASCRIPT6_STRICT',
+        language_in: 'ECMASCRIPT6',
         language_out: 'ECMASCRIPT5_STRICT',
         output_wrapper: '(function(){\n%output%\n}).call(this);',
         js_output_file: 'code.js',
@@ -127,7 +127,15 @@ function compile() {
         dependency_mode: 'STRICT',
         extra_annotation_name: 'cat',
         jscomp_off: 'checkVars',
-        js: ['node_modules/black/dist/black-es6-module.js', 'node_modules/black/package.json']
+        jscomp_warning: 'newCheckTypes',
+        jscomp_off: 'newCheckTypesExtraChecks',
+        use_types_for_optimization: true,
+        new_type_inf: true,
+        process_common_js_modules: true,
+        generate_exports: true,
+        export_local_property_definitions: true,
+        //formatting: 'PRETTY_PRINT',
+        js: ['./__scripts__/base.js', 'node_modules/black/dist/black-es6-module.js', 'node_modules/black/package.json']
       }))
       .pipe(sourcemaps.write('/'))
       .pipe(buffer())

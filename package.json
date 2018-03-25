@@ -47,6 +47,7 @@
     "gulp-strip-debug": "^3.0.0",
     "gulp-template": "^4.0.0",
     "gulp-uglify": "^3.0.0",
+    "gulp-uglify-es": "^1.0.1",
     "gulp-util": "^3.0.8",
     "gulp-watch": "^4.3.5",
     "plumber": "^0.4.8",

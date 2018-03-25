@@ -1,8 +1,8 @@
-import { Black, CanvasDriver, StageScaleMode } from 'black';
+import { Black, CanvasDriver, StageScaleMode, Input } from 'black';
 import Game from './game';
 
 // Game will be our starting class and rendering will be done on Canvas
-const black = new Black('container', Game, CanvasDriver);
+const black = new Black('container', Game, CanvasDriver, [Input]);
 
 // For performance purposes fixed-time-step is disabled by default
 // Enable it if you doing multiplayer, physics based on time based game
