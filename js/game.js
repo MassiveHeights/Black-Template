@@ -1,4 +1,4 @@
-import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, BlendMode, ColorOverLife, Ease } from 'black';
+import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, ColorOverLife, Ease, BlendMode, TextField } from 'black';
 
 export default class Game extends GameObject {
   constructor() {
@@ -21,15 +21,16 @@ export default class Game extends GameObject {
   }
 
   onAssetsLoadded(m) {
+
     // Create a sprite
     let sprite = new Sprite('anvil');
+    sprite.name = 'anvil';
 
     // Align object pivot
     sprite.alignPivot();
 
     sprite.x = this.stage.centerX;
     sprite.y = this.stage.centerY;
-
 
     // make this game object touchable so children elements can be able to receive input too
     this.touchable = true;
@@ -39,6 +40,7 @@ export default class Game extends GameObject {
 
     // Create a emitter
     let emitter = new Emitter();
+    emitter.name = 'glow';
 
     // Addetive blending
     emitter.blendMode = BlendMode.ADD;
@@ -78,7 +80,7 @@ export default class Game extends GameObject {
     emitter.add(new ColorOverLife(0xf16c20, 0xfc3aa4));
 
     // Make them smaller over lief
-    emitter.add(new ScaleOverLife(2, 0, Ease.backInOut));
+    emitter.add(new ScaleOverLife(2, 0));
 
     sprite.on('pointerDown', x => {
       let tween = new Tween({ alpha: 0 }, 1, { delay: 0.2 });
@@ -86,6 +88,7 @@ export default class Game extends GameObject {
     });
 
     // Add both sprite and emitter onto the stage
+
     this.addChild(emitter);
     this.addChild(sprite);
   }

@@ -113,7 +113,7 @@ function compile() {
   } else {
     stream = gulp.src(['./js/**/*.js'], {})
       .pipe(preprocess({ context: { DEBUG: true } }))
-      .pipe(sourcemaps.init({loadMaps: true}))
+      .pipe(sourcemaps.init({ loadMaps: true }))
       .pipe(closureCompiler({
         externs: './externs/w3c_audio.js',
         entry_point: 'main.js',
@@ -126,9 +126,7 @@ function compile() {
         module_resolution: 'NODE',
         dependency_mode: 'STRICT',
         extra_annotation_name: 'cat',
-        jscomp_off: 'checkVars',
         jscomp_warning: 'newCheckTypes',
-        jscomp_off: 'newCheckTypesExtraChecks',
         use_types_for_optimization: true,
         new_type_inf: true,
         process_common_js_modules: true,
