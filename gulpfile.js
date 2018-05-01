@@ -9,12 +9,13 @@ const browserSync = require('browser-sync');
 const plumber = require('gulp-plumber');
 const del = require('del');
 const gutil = require('gulp-util');
-const uglify = require('gulp-uglify');
 const preprocess = require('gulp-preprocess');
 const preprocessify = require('preprocessify');
 const compilerPackage = require('google-closure-compiler');
 const closureCompiler = compilerPackage.gulp(/* options */);
-const stripDebug = require('gulp-strip-debug');
+const runSequence = require('run-sequence').use(gulp);
+const stripDebug = require('./__scripts__/strip-debug');
+const fs = require('fs');
 
 require('babel-polyfill');
 
@@ -42,6 +43,34 @@ const cfgTransform = {
 };
 
 let bundler = browserify('./js/main.js', cfgBrowserify).transform(babelify, cfgTransform);
+const preprocessCfg = {
+  includeExtensions: ['.js'],
+  context: { DEBUG: true }
+};
+
+bundler = bundler.transform(preprocessify, preprocessCfg);
+
+
+const defPath = './node_modules/black/package.json';
+const originalPath = './node_modules/black/package-original.json';
+const devPath = './node_modules/black/package-development.json';
+const prodPath = './node_modules/black/package-production.json';
+
+function preparePackages() {
+  fs.copyFileSync(defPath, prodPath);
+  fs.copyFileSync(defPath, devPath);
+  fs.copyFileSync(defPath, originalPath);
+
+  const dev = JSON.parse(fs.readFileSync(devPath));
+  dev.env = 'development';
+
+  const prod = JSON.parse(fs.readFileSync(prodPath));
+  prod.env = 'production';
+  prod.main = 'dist/gcc/black-es6-module.js';
+
+  fs.writeFileSync(devPath, JSON.stringify(dev, null, 2));
+  fs.writeFileSync(prodPath, JSON.stringify(prod, null, 2));
+}
 
 gulp.task('sheets', function () {
   return gulp.src(['./sheets/*.*'])
@@ -86,68 +115,103 @@ gulp.task('index', ['sheets'], function () {
 });
 
 gulp.task('clean', function () {
-  del.sync('./dist/**/*');
+  del.sync('./dist/**/*.*');
 });
 
-function compile() {
+gulp.task('development-package', function (done) {
+  if (fs.existsSync(originalPath) === false)
+    preparePackages();
+
+  fs.copyFileSync(devPath, defPath);
+  done();
+});
+
+gulp.task('production-package', function (done) {
+  if (fs.existsSync(originalPath) === false)
+    preparePackages();
+
+  fs.copyFileSync(prodPath, defPath);
+  done();
+});
+
+gulp.task('restore-package', function (done) {
+  if (fs.existsSync(originalPath) === false)
+    return;
+
+  fs.copyFileSync(originalPath, defPath);
+  done();
+});
+
+gulp.task('strip-debug', function () {
+  return gulp.src(['./node_modules/black/dist/black-es6-module.js'], {})
+    .pipe(preprocess())
+    .pipe(stripDebug())
+    .pipe(gulp.dest('./node_modules/black/dist/gcc/'));
+});
+
+gulp.task('compile-gcc', function () {
+  return gulp.src(['./js/**/*.js'], {})
+    .pipe(preprocess())
+    .pipe(stripDebug())
+    .pipe(closureCompiler({
+      externs: './externs/w3c_audio.js',
+      entry_point: 'main.js',
+      compilation_level: 'ADVANCED',
+      rewrite_polyfills: false,
+      language_in: 'ECMASCRIPT6',
+      language_out: 'ECMASCRIPT5_STRICT',
+      output_wrapper: '(function(){\n%output%\n}).call(this);',
+      js_output_file: 'code.js',
+      module_resolution: 'NODE',
+      dependency_mode: 'STRICT',
+      extra_annotation_name: 'cat',
+      jscomp_warning: 'newCheckTypes',
+      use_types_for_optimization: true,
+      new_type_inf: true,
+      process_common_js_modules: true,
+      generate_exports: true,
+      export_local_property_definitions: true,
+      js: ['./__scripts__/base.js', 'node_modules/black/dist/gcc/black-es6-module.js', 'node_modules/black/package.json']
+    }))
+    .pipe(buffer())
+    .pipe(gulp.dest('./dist'));
+});
+
+function compile_babel() {
   let stream = null;
 
-  if (dev) {
-    stream = bundler.bundle()
-      .on('error', function (err) {
-        console.log(err.message);
-        browserSync.notify(err.message, 3000);
-        this.emit('end');
-      })
-      .on('end', function () { })
-      .pipe(plumber())
-      .pipe(source('code.js'))
-      .pipe(buffer())
-      .pipe(sourcemaps.init({ loadMaps: true }))
-      .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest('./dist'));
+  stream = bundler.bundle()
+    .on('error', function (err) {
+      console.log(err.message);
+      browserSync.notify(err.message, 3000);
+      this.emit('end');
+    })
+    .on('end', function () { })
+    .pipe(plumber())
+    .pipe(source('code.js'))
+    .pipe(buffer())
+    .pipe(sourcemaps.init({ loadMaps: true }))
+    .pipe(sourcemaps.write('./'))
+    .pipe(gulp.dest('./dist'));
 
-    stream.on('end', x => {
-      browserSync.reload({ stream: false })
-    });
-  } else {
-    stream = gulp.src(['./js/**/*.js'], {})
-      .pipe(preprocess({ context: { DEBUG: true } }))
-      .pipe(sourcemaps.init({ loadMaps: true }))
-      .pipe(closureCompiler({
-        externs: './externs/w3c_audio.js',
-        entry_point: 'main.js',
-        compilation_level: 'ADVANCED', // SIMPLE, ADVANCED
-        rewrite_polyfills: false,
-        language_in: 'ECMASCRIPT6',
-        language_out: 'ECMASCRIPT5_STRICT',
-        output_wrapper: '(function(){\n%output%\n}).call(this);',
-        js_output_file: 'code.js',
-        module_resolution: 'NODE',
-        dependency_mode: 'STRICT',
-        extra_annotation_name: 'cat',
-        jscomp_warning: 'newCheckTypes',
-        use_types_for_optimization: true,
-        new_type_inf: true,
-        process_common_js_modules: true,
-        generate_exports: true,
-        export_local_property_definitions: true,
-        //formatting: 'PRETTY_PRINT',
-        js: ['./__scripts__/base.js', 'node_modules/black/dist/black-es6-module.js', 'node_modules/black/package.json']
-      }))
-      .pipe(sourcemaps.write('/'))
-      .pipe(buffer())
-      .pipe(gulp.dest('./dist'));
-
-    stream.on('end', x => {
-      browserSync.reload({ stream: false })
-    });
-  }
+  stream.on('end', x => {
+    browserSync.reload({ stream: false })
+  });
 
   return stream;
 }
 
-gulp.task('build', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], function () {
+function bs() {
+  let cfg = {
+    server: { baseDir: './dist' },
+    reloadDelay: 50,
+    open: true,
+    port: 4245
+  };
+  return browserSync(cfg);
+}
+
+gulp.task('watchify', function () {
   let cfg = {
     debug: true,
     ignoreWatch: ['**/node_modules/**'],
@@ -155,10 +219,9 @@ gulp.task('build', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], f
     awaitWriteFinish: true
   };
 
-  if (dev)
-    bundler = watchify(bundler, cfg);
+  bundler = watchify(bundler, cfg);
 
-  bundler.on('update', compile);
+  bundler.on('update', compile_babel);
   bundler.on('time', time => {
     gutil.log(gutil.colors.yellow(`Compiled in ${time / 1000}s`));
   });
@@ -167,10 +230,18 @@ gulp.task('build', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], f
     gutil.log(msg);
   });
 
-  return compile();
+  return compile_babel();
 });
 
-gulp.task('watch-assets', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], function () {
+gulp.task('build:dev', function () {
+  return runSequence('clean', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], 'development-package', 'watchify', bs);
+});
+
+gulp.task('build:prod', function () {
+  return runSequence('clean', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], 'production-package', 'strip-debug', 'compile-gcc', 'restore-package');
+});
+
+gulp.task('watch-assets', function () {
   var watcher1 = gulp.watch('./sheets/*.*', ['sheets']);
   var watcher2 = gulp.watch('./fonts/*.*', ['fonts']);
   var watcher3 = gulp.watch('./spine/*.*', ['spine']);
@@ -203,38 +274,4 @@ gulp.task('watch-assets', ['sheets', 'textures', 'spine', 'index', 'fonts', 'aud
   });
 });
 
-function bs() {
-  let cfg = {
-    server: { baseDir: './dist' },
-    reloadDelay: 50,
-    open: true,
-    port: 4245
-  };
-  return browserSync(cfg);
-}
-
-gulp.task('setDev', function () {
-  dev = true;
-
-  const preprocessCfg = {
-    includeExtensions: ['.js'],
-    context: { DEBUG: true }
-  };
-
-  bundler = bundler.transform(preprocessify, preprocessCfg);
-});
-
-gulp.task('setProd', function () {
-  dev = false;
-
-  const preprocessCfg = {
-    includeExtensions: ['.js'],
-    context: {}
-  };
-
-  bundler = bundler.transform(preprocessify, preprocessCfg);
-});
-
-gulp.task('bundle', ['setProd', 'build', 'sheets', 'spine', 'index', 'fonts', 'audio']);
-gulp.task('start:prod', ['setProd', 'build', 'watch-assets'], bs);
-gulp.task('default', ['setDev', 'build', 'watch-assets'], bs);
+gulp.task('default', ['build:dev']);
