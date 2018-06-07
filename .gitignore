@@ -48,3 +48,4 @@ bak
 dist
 tmp
 *.lock
+/package-lock.json
