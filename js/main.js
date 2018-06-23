@@ -4,10 +4,6 @@ import Game from './game';
 // Game will be our starting class and rendering will be done on Canvas
 const black = new Black('container', Game, CanvasDriver, [Input]);
 
-// For performance purposes fixed-time-step is disabled by default
-// Enable it if you doing multiplayer, physics based on time based game
-black.enableFixedTimeStep = false;
-
 // Pause simulation when container loses focus
 black.pauseOnBlur = false;
 
