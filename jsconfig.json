@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "js/**/*",
+        "./node_modules/black/dist/black-es6-module.js"
+      ]
+    }
+  },
+  "include": [
+    "js/**/*",
+    "./node_modules/black/dist/black-es6-module.js"
+  ]
+}
