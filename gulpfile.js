@@ -16,6 +16,7 @@ const closureCompiler = compilerPackage.gulp(/* options */);
 const runSequence = require('run-sequence').use(gulp);
 const stripDebug = require('./__scripts__/strip-debug');
 const fs = require('fs');
+const replace = require('gulp-replace');
 
 require('babel-polyfill');
 
@@ -49,7 +50,6 @@ const preprocessCfg = {
 };
 
 bundler = bundler.transform(preprocessify, preprocessCfg);
-
 
 const defPath = './node_modules/black/package.json';
 const originalPath = './node_modules/black/package-original.json';
@@ -144,15 +144,15 @@ gulp.task('restore-package', function (done) {
 
 gulp.task('strip-debug', function () {
   return gulp.src(['./node_modules/black/dist/black-es6-module.js'], {})
-    .pipe(preprocess())
+    .pipe(preprocess({
+      context: { HIDE_SPLASH_SCREEN: true }
+    }))
     .pipe(stripDebug())
     .pipe(gulp.dest('./node_modules/black/dist/gcc/'));
 });
 
 gulp.task('compile-gcc', function () {
   return gulp.src(['./js/**/*.js'], {})
-    .pipe(preprocess())
-    .pipe(stripDebug())
     .pipe(closureCompiler({
       externs: './externs/w3c_audio.js',
       entry_point: 'main.js',
@@ -165,16 +165,22 @@ gulp.task('compile-gcc', function () {
       module_resolution: 'NODE',
       dependency_mode: 'STRICT',
       extra_annotation_name: 'cat',
-      jscomp_warning: 'newCheckTypes',
       use_types_for_optimization: true,
-      new_type_inf: true,
-      process_common_js_modules: true,
+      process_common_js_modules: false,
       generate_exports: true,
       export_local_property_definitions: true,
-      js: ['./__scripts__/base.js', 'node_modules/black/dist/gcc/black-es6-module.js', 'node_modules/black/package.json']
+      js: ['./__scripts__/base.js', 'node_modules/black/dist/gcc/black-es6-module.js', 'node_modules/black/package.json'],
     }))
     .pipe(buffer())
     .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('trim-gcc', function () {
+  gulp.src(['./dist/code.js'])
+    .pipe(replace(/configurable:!0,/g, ' '))
+    .pipe(replace(/enumerable:!0,/g, ' '))
+    .pipe(replace(/writable:!0,/g, ' '))    
+    .pipe(gulp.dest('./dist/'));
 });
 
 function compile_babel() {
@@ -238,7 +244,7 @@ gulp.task('build:dev', function () {
 });
 
 gulp.task('build:prod', function () {
-  return runSequence('clean', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], 'production-package', 'strip-debug', 'compile-gcc', 'restore-package');
+  return runSequence('clean', ['sheets', 'textures', 'spine', 'index', 'fonts', 'audio'], 'production-package', 'strip-debug', 'compile-gcc', /* 'trim-gcc',*/ 'restore-package');
 });
 
 gulp.task('watch-assets', function () {
