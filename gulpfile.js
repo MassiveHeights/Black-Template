@@ -145,7 +145,7 @@ gulp.task('restore-package', function (done) {
 gulp.task('strip-debug', function () {
   return gulp.src(['./node_modules/black/dist/black-es6-module.js'], {})
     .pipe(preprocess({
-      context: { HIDE_SPLASH_SCREEN: true }
+      context: { /* HIDE_SPLASH_SCREEN: true */ }
     }))
     .pipe(stripDebug())
     .pipe(gulp.dest('./node_modules/black/dist/gcc/'));
