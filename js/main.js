@@ -1,4 +1,4 @@
-import { Black, CanvasDriver, StageScaleMode, Input } from 'black';
+import { Black, CanvasDriver, StageScaleMode, Input } from 'black-engine';
 import Game from './game';
 
 // Game will be our starting class and rendering will be done on Canvas

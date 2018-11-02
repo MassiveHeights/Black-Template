@@ -1,4 +1,4 @@
-import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, ColorOverLife, Ease, BlendMode, TextField } from 'black';
+import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, ColorOverLife, Ease, BlendMode, TextField } from 'black-engine';
 
 export default class Game extends GameObject {
   constructor() {
