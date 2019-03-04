@@ -1,4 +1,4 @@
-import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, ColorOverLife, Ease, BlendMode, TextField } from 'black-engine';
+import { AssetManager, BlendMode, ColorOverLife, Emitter, FloatScatter, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, Tween } from 'black-engine';
 
 export default class Game extends GameObject {
   constructor() {
@@ -27,7 +27,7 @@ export default class Game extends GameObject {
     sprite.name = 'anvil';
 
     // Align object pivot
-    sprite.alignPivot();
+    sprite.alignPivotOffset();
 
     sprite.x = this.stage.centerX;
     sprite.y = this.stage.centerY;
