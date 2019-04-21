@@ -1,17 +1,21 @@
-import { AssetManager, GameObject, Sprite, Tween, InitialScale, InitialLife, InitialVelocity, Acceleration, RotationOverLife, ScaleOverLife, Input, Emitter, FloatScatter, ColorOverLife, Ease, BlendMode, TextField } from 'black-engine';
+import particle from 'assets/textures/particle.png';
+import anvil from 'assets/textures/popart_anvil.png';
+import { Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
 
-export default class Game extends GameObject {
+
+export class Game extends GameObject {
   constructor() {
     super();
 
     // Pick default AssetManager
-    var assets = AssetManager.default;
+    var assets = new AssetManager();
 
-    assets.defaultPath = '/assets/';
+    // load images
+    assets.enqueueImage('anvil', anvil);
+    assets.enqueueImage('star', particle);
 
-    // Preload images
-    assets.enqueueImage('anvil', 'popart_anvil.png');
-    assets.enqueueImage('star', 'particle.png');
+    // load font
+    assets.enqueueGoogleFont('Titillium Web');
 
     // Listen for a complete message
     assets.on('complete', this.onAssetsLoadded, this);
@@ -21,16 +25,12 @@ export default class Game extends GameObject {
   }
 
   onAssetsLoadded(m) {
-
     // Create a sprite
     let sprite = new Sprite('anvil');
-    sprite.name = 'anvil';
-
-    // Align object pivot
-    sprite.alignPivot();
+    sprite.alignPivotOffset(0.5, 1);
 
     sprite.x = this.stage.centerX;
-    sprite.y = this.stage.centerY;
+    sprite.y = this.stage.centerY + 200;
 
     // make this game object touchable so children elements can be able to receive input too
     this.touchable = true;
@@ -40,56 +40,50 @@ export default class Game extends GameObject {
 
     // Create a emitter
     let emitter = new Emitter();
-    emitter.name = 'glow';
-
-    // Addetive blending
+    emitter.space = this.parent;
     emitter.blendMode = BlendMode.ADD;
-
-    // center emitter
     emitter.x = this.stage.centerX + 10;
-    emitter.y = this.stage.centerY - 30;
 
-    // Emit 10 particles
-    emitter.emitCount = new FloatScatter(20);
-
-    // With 0 delay
+    emitter.emitCount = new FloatScatter(30);
     emitter.emitDelay = new FloatScatter(0);
-
-    // with no interval
     emitter.emitInterval = new FloatScatter(0);
-
-    // for 0.1 second
-    emitter.emitDuration = new FloatScatter(0.1);
-
-    // and repeat this forever!
+    emitter.emitDuration = new FloatScatter(Infinity);
     emitter.emitNumRepeats = new FloatScatter(Infinity);
+    emitter.textures = [Black.assets.getTexture('star')];
 
-    // Pick a texture for emitting
-    emitter.textures = [AssetManager.default.getTexture('star')];
-
-    // Render all particles inside this GameObject
-    emitter.space = this;
-
-    // No one lives forever
-    emitter.add(new InitialLife(0.3, 0.4));
-
-    // Initialize every particles with a random velocity inside a box
-    emitter.add(new InitialVelocity(-500, -500, 500, 500));
-
-    // Let particles change the color over life
+    emitter.add(new InitialLife(0.3, 0.9));
+    emitter.add(new InitialVelocity(-50, 0, 50, -200));
+    emitter.add(new Acceleration(-500, -500, 500, 800));
     emitter.add(new ColorOverLife(0xf16c20, 0xfc3aa4));
+    emitter.add(new ScaleOverLife(new FloatScatter(1.2, 0, Ease.exponentialIn)));
 
-    // Make them smaller over lief
-    emitter.add(new ScaleOverLife(2, 0));
+    emitter.y = this.stage.bounds.y - 500;
 
-    sprite.on('pointerDown', x => {
-      let tween = new Tween({ alpha: 0 }, 1, { delay: 0.2 });
-      sprite.addComponent(tween);
-    });
+    let tween = new Tween({ y: [0, sprite.y - 110] }, 1, { loop: true, repeatDelay: 1 });
+    emitter.add(tween);
 
-    // Add both sprite and emitter onto the stage
+    // Tween sprite color
+    sprite.color = 0xffffff;
+    sprite.add(new Tween({ color: [0xffffaa, 0xff0000, 0xffffaa] }, 0.5, { delay: 0.7, loop: true, repeatDelay: 1.5 }, { color: ColorHelper.lerpHSV }));
+    sprite.add(new Tween({ scaleY: [1, 0.9, 1] }, 0.5, { delay: 0.69, loop: true, repeatDelay: 1.5 }));
 
-    this.addChild(emitter);
-    this.addChild(sprite);
+    let textField = new TextField('Black Template 2.0', 'Titillium Web', 0xffffff, 15, FontStyle.NORMAL, FontWeight.BOLD);
+    textField.highQuality = true;
+    textField.x = this.stage.bounds.x;
+    textField.y = this.stage.bounds.y;
+
+    // Add sprite, text and emitter onto the stage
+    this.add(emitter, sprite, textField);
+
+    this.sprite = sprite;
+    this.emitter = emitter;
+    this.text = textField;
+
+    this.stage.on('resize', this.onResize, this);
+  }
+
+  onResize() {
+    this.text.x = this.stage.bounds.x;
+    this.text.y = this.stage.bounds.y;
   }
 }
