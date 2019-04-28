@@ -1,7 +1,8 @@
 import particle from 'assets/textures/particle.png';
-import anvil from 'assets/textures/popart_anvil.png';
-import { Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
+import atlasPng from 'assets/atlases/atlas.png';
+import atlasJson from 'assets/atlases/atlas.json';
 
+import { Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
 
 export class Game extends GameObject {
   constructor() {
@@ -11,22 +12,24 @@ export class Game extends GameObject {
     var assets = new AssetManager();
 
     // load images
-    assets.enqueueImage('anvil', anvil);
+    //assets.enqueueImage('anvil', anvil);
     assets.enqueueImage('star', particle);
 
+    assets.enqueueAtlas('assets', atlasPng, atlasJson);
+    
     // load font
     assets.enqueueGoogleFont('Titillium Web');
-
+    
     // Listen for a complete message
     assets.on('complete', this.onAssetsLoadded, this);
-
+    
     // Start preloading all enqueued assets
     assets.loadQueue();
   }
-
+  
   onAssetsLoadded(m) {
     // Create a sprite
-    let sprite = new Sprite('anvil');
+    let sprite = new Sprite('popart_anvil');
     sprite.alignPivotOffset(0.5, 1);
 
     sprite.x = this.stage.centerX;

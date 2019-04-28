@@ -17,6 +17,7 @@ module.exports = {
     path: `${__dirname}/dist`,
     filename: '[name].js',
   },
+  devtool: 'source-map',
   module: {
     rules: [{
       test: /\.js$/,
@@ -41,11 +42,22 @@ module.exports = {
       },
     }, {
       test: path.resolve(__dirname, 'assets'),
+      exclude: /\.json$/,
       loader: 'file-loader',
       options: {
         name: '[name]-[hash:8].[ext]',
       },
-    }],
+    },
+    {
+      type: 'javascript/auto',
+      test: /\.(json)/,
+      exclude: /(node_modules|bower_components)/,
+      use: [{
+        loader: 'file-loader',
+        options: { name: '[name]-[hash:8].[ext]' },
+      }],
+    }
+    ]
   },
   plugins: [
     new HTMLPlugin({
