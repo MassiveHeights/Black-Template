@@ -10,13 +10,10 @@ npm install
 ```
 
 # Development server
-This template provides ability to run development server on port 4245 to do so run `npm start` in the terminal 
-then open a browser and navigate to `http://127.0.0.1:4245`.
-
-## Watch and rebuild
-All files inside `sheets`, `textures`, `fonts`, `html`, `spine` and `audio` folders will be automatically copied into `dist` folder when changed.
+This template provides ability to run development server on port 8080 to do so run `npm start` in the terminal 
+then open a browser and navigate to `http://127.0.0.1:8080`.
 
 # Production build
-For better compatibility and faster loading times please use production build `npm run bundle`.
+For better compatibility and faster loading times use production build `npm run build`.
 
 
