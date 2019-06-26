@@ -1,4 +1,4 @@
-import { Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
+import { Engine, Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
 import particle from 'assets/textures/particle.png';
 import anvil from 'assets/textures/popart_anvil.png';
 

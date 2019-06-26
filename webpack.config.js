@@ -3,6 +3,9 @@ const webpack = require('webpack');
 const HTMLPlugin = require('html-webpack-plugin');
 
 module.exports = {
+  devServer: {
+    port: 3000
+  },
   resolve: {
     alias: {
       assets: `${__dirname}/assets/`,
