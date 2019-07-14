@@ -14,7 +14,7 @@ engine.pauseOnHide = false;
 engine.start();
 
 // // Set default stage size
-engine.stage.setSize(640, 960);
+engine.stage.setSize(900, 500);
 
 // // Makes stage always centered
 engine.stage.scaleMode = StageScaleMode.LETTERBOX;

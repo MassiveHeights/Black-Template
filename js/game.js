@@ -1,8 +1,6 @@
-import { Engine, Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween, Input } from 'black-engine';
+import { Engine, Acceleration, AssetManager, Black, BlendMode, ColorHelper, ColorOverLife, Ease, Emitter, FloatScatter, FontStyle, FontWeight, GameObject, InitialLife, InitialVelocity, ScaleOverLife, Sprite, TextField, Tween } from 'black-engine';
 import particle from 'assets/textures/particle.png';
 import anvil from 'assets/textures/popart_anvil.png';
-import UI from './objects/ui';
-
 
 export class Game extends GameObject {
   constructor() {
@@ -15,13 +13,6 @@ export class Game extends GameObject {
     assets.enqueueImage('anvil', anvil);
     assets.enqueueImage('star', particle);
 
-    assets.enqueueImage('square', 'assets/textures/square.png');
-    assets.enqueueImage('button', 'assets/textures/button_arrow.png');
-    assets.enqueueImage('button-act', 'assets/textures/button_act.png');
-    assets.enqueueImage('player', 'assets/textures/player.png');
-    assets.enqueueImage('player-act', 'assets/textures/player_act.png');
-
-
     // load font
     assets.enqueueGoogleFont('Titillium Web');
 
@@ -30,12 +21,9 @@ export class Game extends GameObject {
 
     // Start preloading all enqueued assets
     assets.loadQueue();
-
-    this._ui = null
   }
 
   onAssetsLoadded(m) {
-
     // Create a sprite
     let sprite = new Sprite('anvil');
     sprite.alignPivotOffset(0.5, 1);
@@ -91,11 +79,6 @@ export class Game extends GameObject {
     this.text = textField;
 
     this.stage.on('resize', this.onResize, this);
-
-    // Add UI --------------------------------------
-
-    this._ui = this.addChild(new UI(this.stage));
-
   }
 
   onResize() {
