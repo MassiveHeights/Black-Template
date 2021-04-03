@@ -10,8 +10,8 @@ npm install
 ```
 
 # Development server
-This template provides ability to run development server on port 8080 to do so run `npm start` in the terminal 
-then open a browser and navigate to `http://127.0.0.1:8080`.
+This template provides ability to run development server on port 3000 to do so run `npm start` in the terminal 
+then open a browser and navigate to `http://127.0.0.1:3000`.
 
 # Production build
 For better compatibility and faster loading times use production build `npm run build`.
