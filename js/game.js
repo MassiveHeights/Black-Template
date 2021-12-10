@@ -2,10 +2,6 @@ import { Engine, Acceleration, AssetManager, Black, BlendMode, ColorHelper, Colo
 import particle from 'assets/textures/particle.png';
 import anvil from 'assets/textures/popart_anvil.png';
 
-import btn_normal from 'assets/textures/btn_normal.png';
-import btn_hover from 'assets/textures/btn_hover.png';
-import btn_down from 'assets/textures/btn_down.png';
-
 export class Game extends GameObject {
   constructor() {
     super();
@@ -16,10 +12,6 @@ export class Game extends GameObject {
     // load images, make sure to import them first
     assets.enqueueImage('anvil', anvil);
     assets.enqueueImage('star', particle);
-
-    assets.enqueueImage('btn_normal', btn_normal);
-    assets.enqueueImage('btn_hover', btn_hover);
-    assets.enqueueImage('btn_down', btn_down);
 
     // load font
     assets.enqueueGoogleFont('Titillium Web');
