@@ -2,6 +2,10 @@ import { Engine, Acceleration, AssetManager, Black, BlendMode, ColorHelper, Colo
 import particle from 'assets/textures/particle.png';
 import anvil from 'assets/textures/popart_anvil.png';
 
+import btn_normal from 'assets/textures/btn_normal.png';
+import btn_hover from 'assets/textures/btn_hover.png';
+import btn_down from 'assets/textures/btn_down.png';
+
 export class Game extends GameObject {
   constructor() {
     super();
@@ -12,6 +16,10 @@ export class Game extends GameObject {
     // load images, make sure to import them first
     assets.enqueueImage('anvil', anvil);
     assets.enqueueImage('star', particle);
+
+    assets.enqueueImage('btn_normal', btn_normal);
+    assets.enqueueImage('btn_hover', btn_hover);
+    assets.enqueueImage('btn_down', btn_down);
 
     // load font
     assets.enqueueGoogleFont('Titillium Web');
@@ -66,7 +74,7 @@ export class Game extends GameObject {
     sprite.add(new Tween({ color: [0xffffaa, 0xff0000, 0xffffaa] }, 0.5, { delay: 0.7, loop: true, repeatDelay: 1.5 }, { color: ColorHelper.lerpHSV }));
     sprite.add(new Tween({ scaleY: [1, 0.9, 1] }, 0.5, { delay: 0.69, loop: true, repeatDelay: 1.5 }));
 
-    let textField = new TextField('Black Engine v0.5.10', 'Titillium Web', 0xffffff, 15, FontStyle.NORMAL, FontWeight.BOLD);
+    let textField = new TextField('Black Engine', 'Titillium Web', 0xffffff, 15, FontStyle.NORMAL, FontWeight.BOLD);
     textField.highQuality = true;
     textField.x = this.stage.bounds.x;
     textField.y = this.stage.bounds.y;
