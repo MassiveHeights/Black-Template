@@ -25,7 +25,7 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/runtime-corejs2": "^7.11.2",
     "babel-loader": "^8.1.0",
-    "black-engine": "^0.5.12",
+    "black-engine": "^0.5.15",
     "file-loader": "^6.1.1",
     "html-webpack-plugin": "^4.5.0",
     "rimraf": "^3.0.2",
