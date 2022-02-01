@@ -1,4 +1,5 @@
-import { AssetManager, Spine, GameObject, MessageDispatcher, Black } from 'black-engine';
+import { AssetManager, GameObject, MessageDispatcher, Black } from 'black-engine';
+import { Spine } from 'black-spine';
 import spineImage from 'assets/spineboy/spineboy.png';
 import spineAtlas from 'assets/spineboy/spineboy-atlas.json';
 import spineAnimation from 'assets/spineboy/spineboy.json';
