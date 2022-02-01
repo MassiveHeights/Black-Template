@@ -1,31 +1,43 @@
 const path = require('path');
-const merge = require('webpack-merge')
-const common = require('./webpack.config.js')
+const HTMLPlugin = require('html-webpack-plugin');
 
-module.exports = merge(common, {
+module.exports = {
   mode: 'production',
+  resolve: {
+    alias: {
+      assets: `${__dirname}/assets/`,
+      js: `${__dirname}/js/`
+    },
+    mainFields: ['main']
+  },
+  entry: {
+    code: './js/main.js',
+  },
+  output: {
+    path: `${__dirname}/dist`,
+    filename: '[name].js',
+  },
   module: {
-    rules: [{
-      test: /\.js$/,
-      include: [
-        path.resolve(__dirname, 'js'),
-        path.resolve(__dirname, 'node_modules/black-engine'),
-      ],
-      use: {
-        loader: 'babel-loader',
-        options: {
-          babelrc: false,
-          presets: [['@babel/preset-env', {
-            modules: false,
-            targets: {
-              node: 'current'
-            }
-          }]],
-          plugins: [
-            ['@babel/plugin-transform-runtime', { corejs: 2, useESModules: false, regenerator: true }],
-          ],
+    rules: [
+      { test: /\.(png|jpe?g|svg)$/i, type: 'asset/resource', include: [path.resolve(__dirname, 'assets/')] },
+      { test: /\.(json)$/i, type: 'asset/resource', include: [path.resolve(__dirname, 'assets/')] },
+      {
+        test: /\.js$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
+            cacheDirectory: true,
+            targets: '> 0.25%, not dead',
+            plugins: ['@babel/plugin-transform-template-literals', '@babel/plugin-proposal-optional-chaining']
+          }
         },
-      },
-    }],
-  }
-});
+      }
+    ],
+  },
+  plugins: [
+    new HTMLPlugin({
+      template: './html/index.html.ejs',
+    }),
+  ]
+};
