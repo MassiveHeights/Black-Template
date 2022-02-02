@@ -28,7 +28,7 @@ module.exports = {
           options: {
             presets: ['@babel/preset-env'],
             cacheDirectory: true,
-            targets: '> 0.25%, not dead',
+            targets: '> 1%',
             plugins: ['@babel/plugin-transform-template-literals', '@babel/plugin-proposal-optional-chaining']
           }
         },
